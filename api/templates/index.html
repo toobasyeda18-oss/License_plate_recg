@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1220">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <title>PlateScope — License plate analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('index') }}" aria-label="PlateScope home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Plate<span class="brand-light">Scope</span></span>
+        </a>
+        <span class="topbar-note"><span class="online-dot"></span> On-device video analysis</span>
+    </header>
+
+    <main class="page-shell">
+        <section class="hero">
+            <p class="eyebrow">LICENSE PLATE INTELLIGENCE</p>
+            <h1>Turn road footage into<br><span>actionable insight.</span></h1>
+            <p class="hero-copy">Upload a video and let computer vision find and read license plates. Your footage stays on this machine.</p>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alerts" role="status">
+                    {% for category, message in messages %}
+                        <p class="alert alert-{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="workspace">
+            <div class="upload-card">
+                <div class="card-heading">
+                    <div>
+                        <p class="eyebrow">NEW ANALYSIS</p>
+                        <h2>Upload a video</h2>
+                    </div>
+                    <span class="step-pill">01 <span>/ 01</span></span>
+                </div>
+                <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data" id="upload-form">
+                    <label class="dropzone" for="video-input" id="dropzone">
+                        <input id="video-input" name="video" type="file"
+                               accept=".mp4,.mov,.mkv,.avi,.m4v,.webm,video/*" required>
+                        <span class="upload-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <strong id="file-title">Drop your video here</strong>
+                        <span class="drop-copy" id="file-description">or <span class="browse-link">browse files</span></span>
+                        <span class="file-meta">MP4, MOV, MKV, AVI, M4V or WEBM · Up to 500 MB</span>
+                    </label>
+                    <div class="selected-file" id="selected-file" hidden>
+                        <span class="file-badge" aria-hidden="true">VID</span>
+                        <span class="selected-name" id="selected-name"></span>
+                        <span class="selected-size" id="selected-size"></span>
+                    </div>
+                    <button class="primary-button" id="submit-button" type="submit">
+                        <span class="button-label">Analyze video</span>
+                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <p class="privacy-note"><span aria-hidden="true">◆</span> Video is processed locally and is not sent to a third party.</p>
+                </form>
+            </div>
+
+            <aside class="info-card">
+                <span class="info-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.6"/><path d="m10 9 5 3-5 3V9Z" fill="currentColor"/></svg>
+                </span>
+                <h3>How it works</h3>
+                <p>Your video is sampled at regular intervals. Detected plates are matched with OCR and shown with a confidence score and timestamp.</p>
+                <div class="info-divider"></div>
+                <div class="info-row"><span class="checkmark">✓</span><span>Results saved in MySQL</span></div>
+                <div class="info-row"><span class="checkmark">✓</span><span>Review detections as a table</span></div>
+                <div class="info-row"><span class="checkmark">✓</span><span>Export results to CSV</span></div>
+            </aside>
+        </section>
+
+        {% if detections is not none %}
+        <section class="results-section" id="results">
+            <div class="results-title">
+                <div>
+                    <p class="eyebrow">ANALYSIS COMPLETE</p>
+                    <h2>Detection results</h2>
+                    <p class="results-subtitle">Results for <strong>{{ video_name }}</strong></p>
+                </div>
+                {% if detections %}
+                <button type="button" class="secondary-button" id="export-button">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 13v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Export CSV
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="metrics-grid">
+                <article class="metric-card">
+                    <span class="metric-label">UNIQUE PLATES</span>
+                    <strong>{{ detections|length }}</strong>
+                    <span class="metric-foot">recognized in this video</span>
+                </article>
+                <article class="metric-card">
+                    <span class="metric-label">AVG. CONFIDENCE</span>
+                    <strong>{{ "%.1f"|format(average_confidence * 100) }}<small>%</small></strong>
+                    <span class="metric-foot">OCR recognition confidence</span>
+                </article>
+                <article class="metric-card video-metric">
+                    <span class="metric-label">SOURCE VIDEO</span>
+                    <strong class="source-name">{{ video_name }}</strong>
+                    <span class="metric-foot">available for playback below</span>
+                </article>
+            </div>
+
+            <div class="results-layout">
+                <article class="results-card">
+                    <div class="table-heading">
+                        <div><h3>Recognized plates</h3><p>One entry per unique plate</p></div>
+                        <span class="count-pill">{{ detections|length }} found</span>
+                    </div>
+                    {% if detections %}
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>PLATE NUMBER</th><th>CONFIDENCE</th><th>VIDEO TIME</th></tr></thead>
+                            <tbody>
+                            {% for detection in detections %}
+                                <tr>
+                                    <td><span class="plate-chip">{{ detection.plate }}</span></td>
+                                    <td><span class="confidence"><span class="confidence-track"><span style="width: {{ (detection.confidence * 100)|round|int }}%"></span></span>{{ "%.1f"|format(detection.confidence * 100) }}%</span></td>
+                                    <td class="timestamp">{{ detection.timestamp }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <span class="empty-icon" aria-hidden="true">⌕</span>
+                        <h3>No plates recognized</h3>
+                        <p>Try a clearer video with visible plates, better lighting, and less motion blur.</p>
+                    </div>
+                    {% endif %}
+                </article>
+
+                <article class="video-card">
+                    <div class="table-heading">
+                        <div><h3>Source footage</h3><p>Review the uploaded video</p></div>
+                    </div>
+                    <video controls preload="metadata" src="{{ video_url }}">
+                        Your browser does not support video playback.
+                    </video>
+                </article>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="history-section">
+            <div class="results-title">
+                <div>
+                    <p class="eyebrow">DATABASE</p>
+                    <h2>Recent analyses</h2>
+                    <p class="results-subtitle">Saved in your configured MySQL database</p>
+                </div>
+            </div>
+            <article class="results-card">
+                {% if recent_videos %}
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr><th>VIDEO</th><th>PLATES</th><th>UPLOADED</th><th></th></tr></thead>
+                        <tbody>
+                        {% for video in recent_videos %}
+                            <tr>
+                                <td>{{ video.original_filename }}</td>
+                                <td>{{ video.detection_count }}</td>
+                                <td class="timestamp">{{ video.uploaded_at }}</td>
+                                <td><a class="history-link" href="{{ url_for('analysis', video_id=video.id) }}">View results →</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="history-empty">No saved analyses yet. Upload a video to get started.</p>
+                {% endif %}
+            </article>
+        </section>
+
+        <footer class="footer"><span>PLATESCOPE</span><span>Private by design · Runs locally</span></footer>
+    </main>
+
+    <script>
+        const form = document.getElementById("upload-form");
+        const input = document.getElementById("video-input");
+        const dropzone = document.getElementById("dropzone");
+        const selectedFile = document.getElementById("selected-file");
+        const selectedName = document.getElementById("selected-name");
+        const selectedSize = document.getElementById("selected-size");
+        const submitButton = document.getElementById("submit-button");
+
+        function showFile(file) {
+            if (!file) return;
+            selectedName.textContent = file.name;
+            selectedSize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            selectedFile.hidden = false;
+            document.getElementById("file-title").textContent = "Video ready to analyze";
+            document.getElementById("file-description").textContent = "Choose another video";
+        }
+
+        input.addEventListener("change", () => showFile(input.files[0]));
+        ["dragenter", "dragover"].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropzone.classList.add("is-dragging");
+            });
+        });
+        ["dragleave", "drop"].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropzone.classList.remove("is-dragging");
+            });
+        });
+        dropzone.addEventListener("drop", (event) => {
+            const files = event.dataTransfer.files;
+            if (files.length) {
+                input.files = files;
+                showFile(files[0]);
+            }
+        });
+        form.addEventListener("submit", () => {
+            submitButton.disabled = true;
+            submitButton.querySelector(".button-label").textContent = "Analyzing video…";
+        });
+
+        const exportButton = document.getElementById("export-button");
+        if (exportButton) {
+            const rows = {{ detections|tojson }};
+            exportButton.addEventListener("click", () => {
+                const quote = (value) => `"${String(value).replaceAll('"', '""')}"`;
+                const csv = [
+                    ["Plate", "Confidence", "Timestamp"].map(quote).join(","),
+                    ...rows.map((row) => [row.plate, `${(row.confidence * 100).toFixed(1)}%`, row.timestamp].map(quote).join(","))
+                ].join("\r\n");
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+                link.download = "plate-detections.csv";
+                link.click();
+                URL.revokeObjectURL(link.href);
+            });
+        }
+    </script>
+</body>
+</html>
