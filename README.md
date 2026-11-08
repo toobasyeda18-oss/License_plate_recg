@@ -31,7 +31,8 @@ An intelligent computer vision system that detects license plates in uploaded vi
 
 ## Demo
 
-![Car Plate Detection Demo](https://github.com/user-attachments/assets/45cfd7b9-e359-454f-87c2-94a22ccdc352).
+![Car Plate Detection Demo]
+https://github.com/user-attachments/assets/45cfd7b9-e359-454f-87c2-94a22ccdc352
 
 
 ## Quick Start
