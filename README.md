@@ -1,7 +1,6 @@
 
 # Car Plate Detection System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.5.3-5C3EE8.svg)](https://opencv.org/)
 [![YOLO](https://img.shields.io/badge/YOLO-8.0.196-00FFFF.svg)](https://github.com/ultralytics/ultralytics)
@@ -167,10 +166,6 @@ Edit `config/settings.py` to modify model paths, the OCR confidence threshold, a
 4. Push to the branch (`git push origin feature/new-feature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - [Roboflow Universe](https://universe.roboflow.com/roboflow-universe-projects/license-plate-recognition-rxg4e) - Dataset
@@ -178,7 +173,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [EasyOCR](https://github.com/JaidedAI/EasyOCR) - OCR
   
 ## 📬 Contact
-- **GitHub:** [SaadAbdElGhaffar](https://github.com/SaadAbdElGhaffar)  
-- **LinkedIn:** [Saad Abd El-Ghaffar](https://www.linkedin.com/in/saadabdelghaffar/)  
-- **Email:** [saad.abdelghaffar.ai@gmail.com](mailto:saad.abdelghaffar.ai@gmail.com)  
-- **Kaggle:** [@abdocan](https://www.kaggle.com/abdocan)
+- **GitHub:** [Syeda Tooba Samreen](toobasyeda18-oss)  
+- **LinkedIn:** [Syeda Tooba Samreen](www.linkedin.com/in/syeda-tooba-0769b6372). 
+- **Email:** [toobasyeda18@gmail.com](toobasyeda18@gmail.com)  
